@@ -1,17 +1,25 @@
-import React from 'react'
-import CatchIpAddress from '../components/CatchIpAddress'
+import React, { useState } from "react";
+import CatchIpAddress from "../components/CatchIpAddress";
+import GoogleMapsLocation from "../components/GoogleMapsLocation";
 
 function HomePage() {
-  return (
-    <div className='HomePage'>
-        <div className="ip_address">
-            <CatchIpAddress/>
-        </div>
-        <div className="wheader">
+  const [geoInfo, setGeoInfo] = useState({});
 
-        </div>
+  const handleGeoInfoChange = (newGeoInfo) => {
+    setGeoInfo(newGeoInfo);
+  };
+
+  return (
+    <div className="HomePage">
+      <div className="ip_address">
+        <CatchIpAddress onGeoInfoChange={handleGeoInfoChange} />
+      </div>
+      <div className="googleLocation">
+        <GoogleMapsLocation geoInfo={geoInfo} />
+      </div>
+      <div className="wheader"></div>
     </div>
-  )
+  );
 }
 
-export default HomePage
+export default HomePage;

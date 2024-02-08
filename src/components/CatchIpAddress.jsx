@@ -1,27 +1,31 @@
 import React, { useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 
-function CatchIpAddress() {
+function CatchIpAddress({ onGeoInfoChange }) {
   const [ipAddress, setIpAddress] = useState("");
   const [geoInfo, setGeoInfo] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchIPInfo = async () => {
-      try {
-        const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
-        const data = await response.json();
+    getVisitorIp(); 
+  }, []);
 
-        setGeoInfo(data);
-        setIsLoading(false);
-      } catch (error) {
-        console.log("Failed to fetch IP:", error);
-      }
-    };
+  useEffect(() => {
+    fetchIPInfo(); 
+  }, [ipAddress, onGeoInfoChange]);
 
-    fetchIPInfo();
-    getVisitorIp();
-  }, [ipAddress]);
+  const fetchIPInfo = async () => {
+    try {
+      const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
+      const data = await response.json();
+
+      setGeoInfo(data);
+      setIsLoading(false);
+      onGeoInfoChange(data);
+    } catch (error) {
+      console.log("Failed to fetch IP:", error);
+    }
+  };
 
   const getVisitorIp = async () => {
     try {
