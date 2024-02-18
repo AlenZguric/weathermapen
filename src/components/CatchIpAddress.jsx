@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
+import { apiKeyIp } from "../firebase/ApiKey";
 
 function CatchIpAddress({ onGeoInfoChange }) {
   const [ipAddress, setIpAddress] = useState("");
   const [geoInfo, setGeoInfo] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const API_KEY = apiKeyIp;
 
   useEffect(() => {
     getVisitorIp(); 
   }, []);
 
   useEffect(() => {
-    fetchIPInfo(); 
-  }, [ipAddress, onGeoInfoChange]);
+    if (ipAddress !== "") {
+      fetchIPInfo();
+    }
+  }, [ipAddress]);
 
   const fetchIPInfo = async () => {
     try {
-      const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
+      setIsLoading(true); // Postavljamo isLoading na true prije nego što počnemo s pozivom API-ja
+
+      const response = await fetch(`https://ipgeolocation.abstractapi.com/v1/?api_key=${API_KEY}&ip_address=${ipAddress}`);
       const data = await response.json();
 
       setGeoInfo(data);
@@ -24,6 +30,7 @@ function CatchIpAddress({ onGeoInfoChange }) {
       onGeoInfoChange(data);
     } catch (error) {
       console.log("Failed to fetch IP:", error);
+      setIsLoading(false); // U slučaju greške, postavljamo isLoading na false kako bismo zaustavili spinner
     }
   };
 
@@ -62,9 +69,9 @@ function CatchIpAddress({ onGeoInfoChange }) {
           <strong>City:</strong>
           {geoInfo.city} <br />
           <strong>Latitude:</strong>
-          {geoInfo.lat} <br />
+          {geoInfo.latitude} <br />
           <strong>Longitude:</strong>
-          {geoInfo.lon} <br />
+          {geoInfo.longitude} <br />
         </div>
       )}
     </div>

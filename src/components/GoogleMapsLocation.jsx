@@ -1,15 +1,14 @@
-
-/* global google */
+/*global google*/
 import React, { useEffect, useState } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
-import {apiKey} from "../firebase/ApiKey.js";
+import { apiKey } from "../firebase/ApiKey.js";
 
 function GoogleMapsLocation({ geoInfo }) {
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
 
   useEffect(() => {
-    if (geoInfo && geoInfo.lat && geoInfo.lon) {
+    if (geoInfo && geoInfo.latitude && geoInfo.longitude) {
       const loader = new Loader({
         apiKey: apiKey,
         version: "weekly",
@@ -18,14 +17,14 @@ function GoogleMapsLocation({ geoInfo }) {
 
       loader.load().then(() => {
         const mapInstance = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: geoInfo.lat, lng: geoInfo.lon },
+          center: { lat: geoInfo.latitude, lng: geoInfo.longitude },
           zoom: 8,
         });
 
         const markerInstance = new google.maps.Marker({
-          position: { lat: geoInfo.lat, lng: geoInfo.lon },
+          position: { lat: geoInfo.latitude, lng: geoInfo.longitude },
           map: mapInstance,
-          title: "Location"
+          title: "Location",
         });
 
         setMap(mapInstance);
