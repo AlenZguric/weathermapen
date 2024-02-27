@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { apiKeyWeather } from '../firebase/ApiKey';
+import React, { useState, useEffect } from "react";
+import { apiKeyWeather } from "../firebase/ApiKey";
+import axios from "axios";
 
 const WeatherInfo = ({ location }) => {
   const [weatherData, setWeatherData] = useState(null);
@@ -11,18 +12,24 @@ const WeatherInfo = ({ location }) => {
     const fetchData = async () => {
       try {
         // Fetch weather data
-        const weatherResponse = await fetch(`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${location.lat},${location.lon}`);
-        const weatherData = await weatherResponse.json();
-        setWeatherData(weatherData);
+        const weatherResponse = await axios.get(
+          `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${location.lat},${location.lon}`
+        );
+        setWeatherData(weatherResponse.data);
+
+        console.log(weatherResponse);
 
         // Fetch air quality data
-        const airQualityResponse = await fetch(`https://api.weatherapi.com/v1/forecastday.json?key=${API_KEY}&q=${location.lat},${location.lon}`);
-        const airQualityData = await airQualityResponse.json();
-        setAirQuality(airQualityData);
+        const airQualityResponse = await axios.get(
+          `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location.lat},${location.lon}&aqi=yes`
+        );
+        setAirQuality(airQualityResponse.data);
+
+        console.log(airQualityResponse);
 
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
@@ -37,7 +44,8 @@ const WeatherInfo = ({ location }) => {
       {loading ? (
         <p>Loading weather data...</p>
       ) : (
-        weatherData && airQuality && (
+        weatherData &&
+        airQuality && (
           <div>
             <h2>Weather for {weatherData.location.name}</h2>
             <h3>Region {weatherData.location.country}</h3>
@@ -50,7 +58,12 @@ const WeatherInfo = ({ location }) => {
             <img src={weatherData.current.condition.icon} alt="Weather icon" />
 
             <h2>Air Quality</h2>
-            <p>Insert air quality data here...</p>
+            <p>CO: {airQuality.current.air_quality.co} μg/m³</p>
+            <p>O3: {airQuality.current.air_quality.o3} μg/m³</p>
+            <p>NO2: {airQuality.current.air_quality.no2} μg/m³</p>
+            <p>SO2: {airQuality.current.air_quality.so2} μg/m³</p>
+            <p>PM2.5: {airQuality.current.air_quality.pm2_5} μg/m³</p>
+            <p>PM10: {airQuality.current.air_quality.pm10} μg/m³</p>
           </div>
         )
       )}

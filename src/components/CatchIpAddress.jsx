@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { apiKeyIp } from "../firebase/ApiKey";
+import axios from "axios";
 
 function CatchIpAddress({ onGeoInfoChange }) {
   const [ipAddress, setIpAddress] = useState("");
@@ -9,7 +10,7 @@ function CatchIpAddress({ onGeoInfoChange }) {
   const API_KEY = apiKeyIp;
 
   useEffect(() => {
-    getVisitorIp(); 
+    getVisitorIp();
   }, []);
 
   useEffect(() => {
@@ -22,12 +23,14 @@ function CatchIpAddress({ onGeoInfoChange }) {
     try {
       setIsLoading(true); // Postavljamo isLoading na true prije nego što počnemo s pozivom API-ja
 
-      const response = await fetch(`https://ipgeolocation.abstractapi.com/v1/?api_key=${API_KEY}&ip_address=${ipAddress}`);
-      const data = await response.json();
+      const response = await axios.get(
+        `https://ipgeolocation.abstractapi.com/v1/?api_key=${API_KEY}&ip_address=${ipAddress}`
+      );
 
-      setGeoInfo(data);
+      setGeoInfo(response);
       setIsLoading(false);
-      onGeoInfoChange(data);
+      onGeoInfoChange(response);
+
     } catch (error) {
       console.log("Failed to fetch IP:", error);
       setIsLoading(false); // U slučaju greške, postavljamo isLoading na false kako bismo zaustavili spinner
@@ -36,10 +39,9 @@ function CatchIpAddress({ onGeoInfoChange }) {
 
   const getVisitorIp = async () => {
     try {
-      const response = await fetch(`https://api.ipify.org`);
-      const data = await response.text();
+      const response = await axios.get(`https://api.ipify.org`);
 
-      setIpAddress(data);
+      setIpAddress(response);
     } catch (error) {
       console.log("Failed to fetch IP:", error);
     }
