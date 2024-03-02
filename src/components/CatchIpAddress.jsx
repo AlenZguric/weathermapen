@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
-import { apiKeyIp } from "../firebase/ApiKey";
+import { apiKeyIp, apiKeyPlace } from "../firebase/ApiKey";
 import axios from "axios";
 
 function CatchIpAddress({ onGeoInfoChange }) {
-  const [ipAddress, setIpAddress] = useState("");
-  const [geoInfo, setGeoInfo] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const API_KEY = apiKeyIp;
+  const [ipAddress, setIpAddress] = useState(""); // Stanje za IP adresu
+  const [geoInfo, setGeoInfo] = useState({}); // Stanje za informacije o lokaciji
+  const [isLoading, setIsLoading] = useState(true); // Stanje za indikator učitavanja
+  const [searchCity, setSearchCity] = useState(""); // Stanje za pretraženi grad
 
   useEffect(() => {
+    // Dohvati trenutnu IP adresu prilikom prvog renderiranja
     getVisitorIp();
   }, []);
 
   useEffect(() => {
+    // Ako je ipAddress postavljen, dohvati informacije o lokaciji
     if (ipAddress !== "") {
       fetchIPInfo();
     }
@@ -21,19 +23,18 @@ function CatchIpAddress({ onGeoInfoChange }) {
 
   const fetchIPInfo = async () => {
     try {
-      setIsLoading(true); // Postavljamo isLoading na true prije nego što počnemo s pozivom API-ja
+      setIsLoading(true);
 
       const response = await axios.get(
-        `https://ipgeolocation.abstractapi.com/v1/?api_key=${API_KEY}&ip_address=${ipAddress}`
+        `https://ipgeolocation.abstractapi.com/v1/?api_key=${apiKeyIp}&ip_address=${ipAddress}`
       );
 
-      setGeoInfo(response);
+      setGeoInfo(response.data); // Postavi informacije o lokaciji
       setIsLoading(false);
-      onGeoInfoChange(response);
-
+      onGeoInfoChange(response.data);
     } catch (error) {
       console.log("Failed to fetch IP:", error);
-      setIsLoading(false); // U slučaju greške, postavljamo isLoading na false kako bismo zaustavili spinner
+      setIsLoading(false);
     }
   };
 
@@ -41,14 +42,38 @@ function CatchIpAddress({ onGeoInfoChange }) {
     try {
       const response = await axios.get(`https://api.ipify.org`);
 
-      setIpAddress(response);
+      setIpAddress(response.data); // Postavi trenutnu IP adresu
     } catch (error) {
       console.log("Failed to fetch IP:", error);
     }
   };
 
   const handleInputChange = (e) => {
-    setIpAddress(e.target.value);
+    setSearchCity(e.target.value); // Postavi vrijednost pretraženog grada
+  };
+
+  const handleSearch = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await axios.get(
+        `https://api.opencagedata.com/geocode/v1/json?q=${searchCity}&key=${apiKeyPlace}`
+      );
+
+      const { lat, lng } = response.data.results[0].geometry;
+
+      const ipResponse = await axios.get(
+        `https://ipgeolocation.abstractapi.com/v1/?api_key=${apiKeyIp}&position=${lat},${lng}`
+      );
+
+      setIpAddress(ipResponse.data.ip_address); // Postavi novu IP adresu
+      setGeoInfo(ipResponse.data); // Postavi nove informacije o lokaciji
+      setIsLoading(false);
+      onGeoInfoChange(ipResponse.data);
+    } catch (error) {
+      console.log("Failed to fetch data:", error);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,19 +85,28 @@ function CatchIpAddress({ onGeoInfoChange }) {
         </div>
       ) : (
         <div className="form-area">
-          <input type="text" value={ipAddress} onChange={handleInputChange} />
+          <input
+            type="text"
+            value={searchCity}
+            onChange={handleInputChange}
+            placeholder="Unesite ime grada..."
+          />
+          <button onClick={handleSearch}>Pretraži</button>
+          <br />
+          <p>{geoInfo.city}</p> {/* Prikazi naziv grada */}
+          <p>{ipAddress}</p> {/* Prikazi IP adresu */}
         </div>
       )}
 
       {geoInfo.country && (
         <div>
-          <strong>Country:</strong>
+          <strong>Država:</strong>
           {geoInfo.country} <br />
-          <strong>City:</strong>
+          <strong>Grad:</strong>
           {geoInfo.city} <br />
-          <strong>Latitude:</strong>
+          <strong>Geografska širina:</strong>
           {geoInfo.latitude} <br />
-          <strong>Longitude:</strong>
+          <strong>Geografska dužina:</strong>
           {geoInfo.longitude} <br />
         </div>
       )}
