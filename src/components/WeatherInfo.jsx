@@ -16,14 +16,14 @@ const WeatherInfo = ({ location }) => {
         );
         setWeatherData(weatherResponse.data);
 
-        console.log(weatherResponse);
+        console.log(weatherResponse.data);
 
         const airQualityResponse = await axios.get(
           `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${location.lat},${location.lon}&aqi=yes`
         );
         setAirQuality(airQualityResponse.data);
 
-        console.log(airQualityResponse);
+        console.log(airQualityResponse.data);
 
         setLoading(false);
       } catch (error) {
@@ -35,7 +35,7 @@ const WeatherInfo = ({ location }) => {
     if (location) {
       fetchData();
     }
-  }, [location]);
+  }, [location, API_KEY]);
 
   const getAirQualityColor = (value, pollutant) => {
     if (pollutant === "O3") {

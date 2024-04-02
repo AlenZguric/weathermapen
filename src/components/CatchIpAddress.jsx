@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import { apiKeyIp, apiKeyPlace } from "../firebase/ApiKey";
 import axios from "axios";
@@ -50,31 +50,36 @@ function CatchIpAddress({ onGeoInfoChange }) {
 
   const handleInputChange = (e) => {
     setSearchCity(e.target.value); // Postavi vrijednost pretraženog grada
+    setGeoInfo(prevState => ({ ...prevState, city: e.target.value })); // Ažuriraj grad u geoInfo
   };
-
+  
   const handleSearch = async () => {
     try {
       setIsLoading(true);
-
+  
       const response = await axios.get(
         `https://api.opencagedata.com/geocode/v1/json?q=${searchCity}&key=${apiKeyPlace}`
       );
-
+  
       const { lat, lng } = response.data.results[0].geometry;
-
+  
       const ipResponse = await axios.get(
         `https://ipgeolocation.abstractapi.com/v1/?api_key=${apiKeyIp}&position=${lat},${lng}`
       );
-
+  
       setIpAddress(ipResponse.data.ip_address); // Postavi novu IP adresu
       setGeoInfo(ipResponse.data); // Postavi nove informacije o lokaciji
       setIsLoading(false);
       onGeoInfoChange(ipResponse.data);
+  
+      console.log(ipResponse.data.flag);
+  
     } catch (error) {
       console.log("Failed to fetch data:", error);
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="CatchIpAddress">
@@ -93,8 +98,8 @@ function CatchIpAddress({ onGeoInfoChange }) {
           />
           <button onClick={handleSearch}>Pretraži</button>
           <br />
-          <p>{geoInfo.city}</p> {/* Prikazi naziv grada */}
-          <p>{ipAddress}</p> {/* Prikazi IP adresu */}
+          <p>{geoInfo.city}</p>
+          <p>{ipAddress}</p>
         </div>
       )}
 

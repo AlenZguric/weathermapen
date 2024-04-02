@@ -1,4 +1,5 @@
 /*global google*/
+
 import React, { useEffect, useState } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
 import { apiKey } from "../firebase/ApiKey.js";
@@ -31,7 +32,9 @@ function GoogleMapsLocation({ geoInfo }) {
         setMarker(markerInstance);
       });
     }
-  }, [geoInfo]);
+  }, [geoInfo]); // Reagiraj na promjene u geoInfo
+
+  // Ovdje možete dodati kôd za uklanjanje prethodnog markera ako je potrebno
 
   return (
     <div className="GoogleMapsLocation">
